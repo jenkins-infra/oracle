@@ -1,0 +1,34 @@
+def dockerImage = 'jenkinsciinfra/hashicorp-tools:0.5.30'
+
+parallel(
+  failFast: false,
+  'terraform': {
+    // as per https://github.com/jenkins-infra/shared-tools/tree/main/terraform#jenkins-pipeline
+    terraform(
+      stagingCredentials: [
+        string(variable: 'ORACLE_OCI_CLI_USER', credentialsId: 'staging_oracle_oci_cli_user'),
+        string(variable: 'ORACLE_OCI_CLI_FINGERPRINT', credentialsId:'staging_oracle_oci_cli_fingerprint'),
+        sshUserPrivateKey(
+          credentialsId: 'staging_oracle_oci_cli_key_content',
+          keyFileVariable: 'ORACLE_OCI_CLI_KEYFILE'
+        ),
+        file(variable: 'BACKEND_CONFIG_FILE', credentialsId: 'staging_terraform_oracle_backend_config'),
+      ],
+      productionCredentials: [
+        string(variable: 'ORACLE_OCI_CLI_USER', credentialsId: 'production_oracle_oci_cli_user'),
+        string(variable: 'ORACLE_OCI_CLI_FINGERPRINT', credentialsId:'production_oracle_oci_cli_fingerprint'),
+        sshUserPrivateKey(
+          credentialsId: 'production_oracle_oci_cli_key_content',
+          keyFileVariable: 'ORACLE_OCI_CLI_KEYFILE'
+        ),
+        file(variable: 'BACKEND_CONFIG_FILE', credentialsId: 'production_terraform_oracle_backend_config'),
+      ],
+    )
+  },
+  'updatecli': {
+    updatecli(action: 'diff', updatecliDockerImage: dockerImage)
+    if (env.BRANCH_IS_PRIMARY) {
+      updatecli(action: 'apply', cronTriggerExpression: '@weekly', updatecliDockerImage: dockerImage)
+    }
+  },
+)
