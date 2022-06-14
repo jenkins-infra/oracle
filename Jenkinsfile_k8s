@@ -6,20 +6,24 @@ parallel(
     // as per https://github.com/jenkins-infra/shared-tools/tree/main/terraform#jenkins-pipeline
     terraform(
       stagingCredentials: [
-        string(variable: 'ORACLE_OCI_CLI_USER', credentialsId: 'staging_oracle_oci_cli_user'),
-        string(variable: 'ORACLE_OCI_CLI_FINGERPRINT', credentialsId:'staging_oracle_oci_cli_fingerprint'),
+        string(variable: 'TF_VAR_region', credentialsId: 'oracle_oci_cli_region'),
+        string(variable: 'TF_VAR_tenancy_ocid', credentialsId: 'oracle_oci_cli_tenancy'),
+        string(variable: 'TF_VAR_user_ocid', credentialsId: 'staging_oracle_oci_cli_user'),
+        string(variable: 'TF_VAR_fingerprint', credentialsId:'staging_oracle_oci_cli_fingerprint'),
         sshUserPrivateKey(
           credentialsId: 'staging_oracle_oci_cli_key_content',
-          keyFileVariable: 'ORACLE_OCI_CLI_KEYFILE'
+          keyFileVariable: 'TF_VAR_private_key_path'
         ),
         file(variable: 'BACKEND_CONFIG_FILE', credentialsId: 'staging_terraform_oracle_backend_config'),
       ],
       productionCredentials: [
-        string(variable: 'ORACLE_OCI_CLI_USER', credentialsId: 'production_oracle_oci_cli_user'),
-        string(variable: 'ORACLE_OCI_CLI_FINGERPRINT', credentialsId:'production_oracle_oci_cli_fingerprint'),
+        string(variable: 'TF_VAR_region', credentialsId: 'oracle_oci_cli_region'),
+        string(variable: 'TF_VAR_tenancy_ocid', credentialsId: 'oracle_oci_cli_tenancy'),
+        string(variable: 'TF_VAR_user_ocid', credentialsId: 'production_oracle_oci_cli_user'),
+        string(variable: 'TF_VAR_fingerprint', credentialsId:'production_oracle_oci_cli_fingerprint'),
         sshUserPrivateKey(
           credentialsId: 'production_oracle_oci_cli_key_content',
-          keyFileVariable: 'ORACLE_OCI_CLI_KEYFILE'
+          keyFileVariable: 'TF_VAR_private_key_path'
         ),
         file(variable: 'BACKEND_CONFIG_FILE', credentialsId: 'production_terraform_oracle_backend_config'),
       ],
