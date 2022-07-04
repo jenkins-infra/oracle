@@ -54,7 +54,8 @@ resource "oci_core_instance" "updates_jenkins_io" {
   }
   create_vnic_details {
     subnet_id        = oci_core_subnet.public_subnet.id
-    assign_public_ip = true
+    assign_public_ip = false #will assign a non ephemeral one (RESERVED ip)
+    nsg_ids          = [oci_core_network_security_group.VM_network_security_group.id]
   }
   metadata = {
     ssh_authorized_keys = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGFrPRIlP8qplANgNa3IO5c1gh0ZqNNj17RZeYcm+Jcb jenkins-infra-team@googlegroups.com"
