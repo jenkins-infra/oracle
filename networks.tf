@@ -61,6 +61,30 @@ resource "oci_core_network_security_group_security_rule" "ssh" {
     }
   }
 }
+
+resource "oci_core_internet_gateway" "network_gateway" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.default.id
+  enabled        = true
+  display_name   = "Public network gateway"
+  freeform_tags  = local.all_tags
+}
+
+
+resource "oci_core_default_route_table" "network_route_table" {
+  manage_default_resource_id = oci_core_subnet.public_subnet.route_table_id
+
+  compartment_id = var.compartment_ocid
+
+  display_name   = "Public network route table"
+  freeform_tags  = local.all_tags
+  route_rules {
+    network_entity_id = oci_core_internet_gateway.network_gateway.id
+    destination       = "0.0.0.0/0"
+    destination_type  = "CIDR_BLOCK"
+  }
+}
+
 output "instance_public_ip" {
   value = oci_core_instance.updates_jenkins_io.public_ip
 }

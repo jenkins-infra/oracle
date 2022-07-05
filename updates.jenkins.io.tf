@@ -1,7 +1,7 @@
 data "oci_core_images" "updates_jenkins_io" {
   compartment_id           = var.compartment_ocid
   operating_system         = "Canonical Ubuntu"
-  operating_system_version = "22.04"
+  operating_system_version = "20.04"
   state                    = "AVAILABLE"
   shape                    = local.updates_jenkins_io_shape
   sort_by                  = "TIMECREATED"
