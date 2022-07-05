@@ -26,34 +26,50 @@ resource "oci_core_subnet" "internal_subnet" {
   prohibit_public_ip_on_vnic = true
 }
 
-data "oci_core_private_ips" "get_privates_ip_id" {
+data "oci_core_private_ips" "updates_jenkins_io" {
   ip_address = oci_core_instance.updates_jenkins_io.private_ip
   subnet_id  = oci_core_subnet.public_subnet.id
 }
 
-resource "oci_core_public_ip" "VMupdate_ip" {
+resource "oci_core_public_ip" "updates_jenkins_io" {
   compartment_id = var.compartment_ocid
   lifetime       = "RESERVED"
-  display_name   = "Update VM public ip"
+  display_name   = "updates.jenkins.io public ip"
   freeform_tags  = local.all_tags
-  private_ip_id  = data.oci_core_private_ips.get_privates_ip_id.private_ips[0].id
+  private_ip_id  = data.oci_core_private_ips.updates_jenkins_io.private_ips[0].id
 }
 
-resource "oci_core_network_security_group" "VM_network_security_group" {
+resource "oci_core_network_security_group" "updates_jenkins_io" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.default.id
-  display_name   = "Update VM security group"
+  display_name   = "updates.jenkins.io security group"
   freeform_tags  = local.all_tags
 }
 
-resource "oci_core_network_security_group_security_rule" "ssh" {
-  network_security_group_id = oci_core_network_security_group.VM_network_security_group.id
+resource "oci_core_network_security_group_security_rule" "ssh_smerle" {
+  network_security_group_id = oci_core_network_security_group.updates_jenkins_io.id
 
   description = "SSH"
   direction   = "INGRESS"
   protocol    = 6 #TCP
   source_type = "CIDR_BLOCK"
   source      = "82.64.5.129/32"
+  tcp_options {
+    destination_port_range {
+      min = 22
+      max = 22
+    }
+  }
+}
+
+resource "oci_core_network_security_group_security_rule" "ssh_bastion" {
+  network_security_group_id = oci_core_network_security_group.updates_jenkins_io.id
+
+  description = "SSH"
+  direction   = "INGRESS"
+  protocol    = 6 #TCP
+  source_type = "CIDR_BLOCK"
+  source      = "52.87.139.201/32"
   tcp_options {
     destination_port_range {
       min = 22
@@ -76,8 +92,8 @@ resource "oci_core_default_route_table" "network_route_table" {
 
   compartment_id = var.compartment_ocid
 
-  display_name   = "Public network route table"
-  freeform_tags  = local.all_tags
+  display_name  = "Public network route table"
+  freeform_tags = local.all_tags
   route_rules {
     network_entity_id = oci_core_internet_gateway.network_gateway.id
     destination       = "0.0.0.0/0"
@@ -86,5 +102,5 @@ resource "oci_core_default_route_table" "network_route_table" {
 }
 
 output "instance_public_ip" {
-  value = oci_core_instance.updates_jenkins_io.public_ip
+  value = oci_core_public_ip.updates_jenkins_io.ip_address
 }
