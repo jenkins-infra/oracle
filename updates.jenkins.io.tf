@@ -64,6 +64,17 @@ resource "oci_core_instance" "updates_jenkins_io" {
   freeform_tags = local.all_tags
 }
 
+resource "oci_core_vnic_attachment" "secondary_vnic_attachment" {
+  create_vnic_details {
+    display_name  = "internal_vnic for updates.jenkins.io"
+    freeform_tags = local.all_tags
+    nsg_ids       = [oci_core_network_security_group.updates_jenkins_io.id]
+    subnet_id     = oci_core_subnet.internal_subnet.id
+  }
+  instance_id  = oci_core_instance.updates_jenkins_io.id
+  display_name = "internal_vnic attachment for updates.jenkins.io"
+}
+
 resource "oci_core_volume_attachment" "updates_jenkins_io_data" {
   # Paravirtualized attachment is expected to automount the data volume (compared to "iscsi")
   attachment_type = "paravirtualized"
