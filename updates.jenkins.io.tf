@@ -28,11 +28,12 @@ resource "oci_core_volume_backup_policy" "updates_jenkins_io" {
 }
 
 resource "oci_core_volume" "updates_jenkins_io" {
-  compartment_id      = var.compartment_ocid
-  availability_domain = data.oci_identity_availability_domain.availability_domain.name
-  display_name        = "Data volume for updates.jenkins.io"
-  size_in_gbs         = 1200
-  freeform_tags       = local.all_tags
+  compartment_id       = var.compartment_ocid
+  availability_domain  = data.oci_identity_availability_domain.availability_domain.name
+  display_name         = "Data volume for updates.jenkins.io"
+  size_in_gbs          = 1200
+  freeform_tags        = local.all_tags
+  is_auto_tune_enabled = true
 }
 
 resource "oci_core_volume_backup_policy_assignment" "volume_backup_policy_assignment" {
@@ -80,4 +81,6 @@ resource "oci_core_volume_attachment" "updates_jenkins_io_data" {
   attachment_type = "paravirtualized"
   instance_id     = oci_core_instance.updates_jenkins_io.id
   volume_id       = oci_core_volume.updates_jenkins_io.id
+  display_name    = "volume attachment for updates.jenkins.io"
+  device          = "/dev/oracleoci/oraclevdb"
 }
