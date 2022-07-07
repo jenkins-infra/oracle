@@ -18,32 +18,12 @@ resource "oci_core_subnet" "public_subnet" {
 }
 
 # Sub network use to communicate machine to machine internally
-resource "oci_core_subnet" "internal_subnet" {
+resource "oci_core_subnet" "private_subnet" {
   cidr_block                 = "10.0.10.0/24"
   compartment_id             = var.compartment_ocid
   vcn_id                     = oci_core_vcn.default.id
   freeform_tags              = local.all_tags
   prohibit_public_ip_on_vnic = true
-}
-
-data "oci_core_private_ips" "updates_jenkins_io" {
-  ip_address = oci_core_instance.updates_jenkins_io.private_ip
-  subnet_id  = oci_core_subnet.public_subnet.id
-}
-
-resource "oci_core_public_ip" "updates_jenkins_io" {
-  compartment_id = var.compartment_ocid
-  lifetime       = "RESERVED"
-  display_name   = "updates.jenkins.io public ip"
-  freeform_tags  = local.all_tags
-  private_ip_id  = data.oci_core_private_ips.updates_jenkins_io.private_ips[0].id
-}
-
-resource "oci_core_network_security_group" "updates_jenkins_io" {
-  compartment_id = var.compartment_ocid
-  vcn_id         = oci_core_vcn.default.id
-  display_name   = "updates.jenkins.io security group"
-  freeform_tags  = local.all_tags
 }
 
 resource "oci_core_network_security_group_security_rule" "ssh_smerle" {
@@ -99,8 +79,4 @@ resource "oci_core_default_route_table" "network_route_table" {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
   }
-}
-
-output "instance_public_ip" {
-  value = oci_core_public_ip.updates_jenkins_io.ip_address
 }

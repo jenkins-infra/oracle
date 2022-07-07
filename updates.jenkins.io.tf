@@ -61,7 +61,7 @@ resource "oci_core_instance" "updates_jenkins_io" {
   metadata = {
     ssh_authorized_keys = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGFrPRIlP8qplANgNa3IO5c1gh0ZqNNj17RZeYcm+Jcb jenkins-infra-team@googlegroups.com"
   }
-  display_name  = "VM for updates.jenkins.io service"
+  display_name  = "Virtual Machine for updates.jenkins.io service"
   freeform_tags = local.all_tags
 }
 
@@ -70,7 +70,7 @@ resource "oci_core_vnic_attachment" "secondary_vnic_attachment" {
     display_name  = "internal_vnic for updates.jenkins.io"
     freeform_tags = local.all_tags
     nsg_ids       = [oci_core_network_security_group.updates_jenkins_io.id]
-    subnet_id     = oci_core_subnet.internal_subnet.id
+    subnet_id     = oci_core_subnet.private_subnet.id
   }
   instance_id  = oci_core_instance.updates_jenkins_io.id
   display_name = "internal_vnic attachment for updates.jenkins.io"
@@ -83,4 +83,29 @@ resource "oci_core_volume_attachment" "updates_jenkins_io_data" {
   volume_id       = oci_core_volume.updates_jenkins_io.id
   display_name    = "volume attachment for updates.jenkins.io"
   device          = "/dev/oracleoci/oraclevdb"
+}
+
+
+data "oci_core_private_ips" "updates_jenkins_io" {
+  ip_address = oci_core_instance.updates_jenkins_io.private_ip
+  subnet_id  = oci_core_subnet.public_subnet.id
+}
+
+resource "oci_core_public_ip" "updates_jenkins_io" {
+  compartment_id = var.compartment_ocid
+  lifetime       = "RESERVED"
+  display_name   = "updates.jenkins.io public ip"
+  freeform_tags  = local.all_tags
+  private_ip_id  = data.oci_core_private_ips.updates_jenkins_io.private_ips[0].id
+}
+
+resource "oci_core_network_security_group" "updates_jenkins_io" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.default.id
+  display_name   = "updates.jenkins.io security group"
+  freeform_tags  = local.all_tags
+}
+
+output "updates_jenkins_io_public_ip" {
+  value = oci_core_public_ip.updates_jenkins_io.ip_address
 }
