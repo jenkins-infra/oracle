@@ -1,0 +1,19 @@
+#cloud-config
+write_files:
+  - path: /run/puppetinstall/puppet.conf
+    owner: root:root
+    permissions: '0755'
+    content: |
+      [main]
+      server = puppet.jenkins.io
+      [agent]
+      certname = ${hostname}
+runcmd:
+  - [ mkdir, -p, /run/puppetinstall ]
+  - [ wget, "https://apt.puppetlabs.com/puppet6-release-focal.deb", -O, /run/puppetinstall/puppet6-release-focal.deb ]
+  - [ dpkg, -i, /run/puppetinstall/puppet6-release-focal.deb ]
+  - [ apt-get, update, -y ]
+  - [ apt-get, install, "puppet-agent=6.23.0*", --yes, --quiet, --no-install-recommends ]
+  - [ mv, /run/puppetinstall/puppet.conf, /etc/puppetlabs/puppet/puppet.conf]
+  - [ systemctl, start, puppet ]
+  - [ systemctl, enable, puppet ]
