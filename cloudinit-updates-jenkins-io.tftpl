@@ -17,7 +17,7 @@ runcmd:
   - [ dpkg, -i, /run/puppetinstall/puppet6-release-focal.deb ]
   - [ apt-get, update, -y ]
   - [ apt-get, install, "puppet-agent=6.23.0*", --yes, --quiet, --no-install-recommends ]
-  # see above comment in the write_files section
+  # see above comment in the "write_files" section
   - [ mv, /run/puppetinstall/puppet.conf, /etc/puppetlabs/puppet/puppet.conf]
   - [ systemctl, enable, puppet ]
   - [ systemctl, start, puppet ]
