@@ -2,6 +2,8 @@
 write_files:
   #config file for puppet agent on this VM (updates.jenkins.io)
   #not directly at the destination path as it will fail the packet installation
+  #when writing files, do not use /tmp dir as it races with systemd-tmpfiles-clean LP: #1707222. Use /run/somedir instead. : https://cloudinit.readthedocs.io/en/latest/topics/modules.html#runcmd
+
   - path: /run/puppetinstall/puppet.conf
     owner: root:root
     permissions: '0640'
@@ -16,7 +18,7 @@ runcmd:
   - [ dpkg, -i, /run/puppetinstall/puppet6-release-focal.deb ]
   - [ apt-get, update, -y ]
   - [ apt-get, install, "puppet-agent=6.23.0*", --yes, --quiet, --no-install-recommends ]
-  # move the temporaty puppetagent config file in the correct place /run/puppetinstall/puppet.conf
+  # see above comment in the write_files section
   - [ mv, /run/puppetinstall/puppet.conf, /etc/puppetlabs/puppet/puppet.conf]
-  - [ systemctl, start, puppet ]
   - [ systemctl, enable, puppet ]
+  - [ systemctl, start, puppet ]
