@@ -1,7 +1,7 @@
 data "oci_core_images" "updates_jenkins_io" {
   compartment_id           = var.compartment_ocid
   operating_system         = "Canonical Ubuntu"
-  operating_system_version = "22.04"
+  operating_system_version = "20.04"
   state                    = "AVAILABLE"
   shape                    = local.updates_jenkins_io_shape
   sort_by                  = "TIMECREATED"
@@ -9,7 +9,8 @@ data "oci_core_images" "updates_jenkins_io" {
 }
 
 locals {
-  updates_jenkins_io_shape = "VM.Standard.A1.Flex" #imply ARM
+  updates_jenkins_io_shape    = "VM.Standard.A1.Flex" #imply ARM
+  updates_jenkins_io_hostname = "oracle.updates.jenkins.io"
 }
 
 resource "oci_core_volume_backup_policy" "updates_jenkins_io" {
@@ -60,8 +61,9 @@ resource "oci_core_instance" "updates_jenkins_io" {
   }
   metadata = {
     ssh_authorized_keys = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGFrPRIlP8qplANgNa3IO5c1gh0ZqNNj17RZeYcm+Jcb jenkins-infra-team@googlegroups.com"
+    user_data           = base64encode(templatefile("./cloudinit-updates-jenkins-io.tftpl", { hostname = "${local.updates_jenkins_io_hostname}" }))
   }
-  display_name  = "Virtual Machine for updates.jenkins.io service"
+  display_name  = local.updates_jenkins_io_hostname
   freeform_tags = local.all_tags
 }
 
