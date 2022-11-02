@@ -1,12 +1,13 @@
-data "oci_core_images" "updates_jenkins_io" {
-  compartment_id           = var.compartment_ocid
-  operating_system         = "Canonical Ubuntu"
-  operating_system_version = "20.04"
-  state                    = "AVAILABLE"
-  shape                    = local.updates_jenkins_io_shape
-  sort_by                  = "TIMECREATED"
-  sort_order               = "DESC"
-}
+## Commented out to avoid instance deletion/creation
+# data "oci_core_images" "updates_jenkins_io" {
+#   compartment_id           = var.compartment_ocid
+#   operating_system         = "Canonical Ubuntu"
+#   operating_system_version = "20.04"
+#   state                    = "AVAILABLE"
+#   shape                    = local.updates_jenkins_io_shape
+#   sort_by                  = "TIMECREATED"
+#   sort_order               = "DESC"
+# }
 
 locals {
   updates_jenkins_io_shape    = "VM.Standard.A1.Flex" #imply ARM
@@ -52,11 +53,13 @@ resource "oci_core_instance" "updates_jenkins_io" {
   }
   source_details {
     source_type = "image"
-    source_id   = data.oci_core_images.updates_jenkins_io.images[0].id
+    ## Commented out to avoid instance deletion/creation
+    # source_id   = data.oci_core_images.updates_jenkins_io.images[0].id
+    source_id = "ocid1.image.oc1.phx.aaaaaaaa42262dwicdpvce6qendczduntd2mcyq6tn7e6ow7mclqmerwwclq"
   }
   create_vnic_details {
     subnet_id        = oci_core_subnet.public_subnet.id
-    assign_public_ip = false #will assign a non ephemeral one (RESERVED ip)
+    assign_public_ip = false # will assign a non ephemeral one (RESERVED ip)
     nsg_ids          = [oci_core_network_security_group.updates_jenkins_io.id]
   }
   metadata = {
