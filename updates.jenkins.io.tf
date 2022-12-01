@@ -64,7 +64,7 @@ resource "oci_core_instance" "updates_jenkins_io" {
   }
   metadata = {
     ssh_authorized_keys = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGFrPRIlP8qplANgNa3IO5c1gh0ZqNNj17RZeYcm+Jcb jenkins-infra-team@googlegroups.com"
-    user_data           = base64encode(templatefile("./cloudinit-updates-jenkins-io.tftpl", { hostname = "${local.updates_jenkins_io_hostname}" }))
+    user_data           = base64encode(templatefile("./.shared-tools/terraform/cloudinit.tftpl", { hostname = "${local.updates_jenkins_io_hostname}" }))
   }
   display_name  = local.updates_jenkins_io_hostname
   freeform_tags = local.all_tags
